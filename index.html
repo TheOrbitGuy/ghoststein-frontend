@@ -63,7 +63,6 @@
       background:#0b0b14; overflow:hidden;
     }
 
-    /* Light rays */
     .rays {
       position:absolute; inset:0; pointer-events:none;
       background: conic-gradient(
@@ -79,25 +78,42 @@
       );
     }
 
-    /* Grid */
     .grid-y {
       position:absolute; inset:0; pointer-events:none;
       display:flex; flex-direction:column; justify-content:space-between; padding:8px 0;
     }
     .grid-line { width:100%; height:1px; background:rgba(255,255,255,0.04); }
-    .grid-label { position:absolute; right:6px; font-size:9px; color:rgba(255,255,255,0.2); font-family:'Montserrat',sans-serif; }
 
-    /* Graph SVG */
     .graph-svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 
-    /* Ghost emoji watermark */
     .ghost-watermark {
       position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
-      font-size:min(20vw, 100px); opacity:0.06; pointer-events:none;
-      user-select:none; line-height:1;
+      width:min(22vw, 110px); opacity:0.10; pointer-events:none;
+      user-select:none; animation:ghost-bob 2s ease-in-out infinite alternate;
     }
 
-    /* Multiplier */
+    @keyframes ghost-float-watermark {
+      0%,100% { transform:translateX(-50%) translateY(0px); }
+      50%     { transform:translateX(-50%) translateY(-8px); }
+    }
+
+    @keyframes ghost-eye-blink {
+      0%,88%,100% { transform:scaleY(1); transform-origin:center; }
+      94%         { transform:scaleY(0.08); transform-origin:center; }
+    }
+    @keyframes ghost-tail-l {
+      0%,100% { d:path("M2 22 Q0 27 3 28 Q6 29 7 25"); }
+      50%     { d:path("M2 22 Q-1 28 2 30 Q5 31 7 25"); }
+    }
+    @keyframes ghost-tail-m {
+      0%,100% { d:path("M10 24 Q10 29 13 29 Q16 29 16 24"); }
+      50%     { d:path("M10 24 Q9 30 13 31 Q17 30 16 24"); }
+    }
+    @keyframes ghost-tail-r {
+      0%,100% { d:path("M19 25 Q20 29 23 28 Q26 27 24 22"); }
+      50%     { d:path("M19 25 Q21 31 24 30 Q27 28 24 22"); }
+    }
+
     .mult-wrap {
       position:absolute; top:50%; left:50%; transform:translate(-50%,-55%);
       text-align:center; pointer-events:none; z-index:10;
@@ -107,10 +123,10 @@
       font-size:min(14vw,70px); line-height:1;
       transition:color 0.2s;
     }
-    .mult-value.idle   { color:rgba(255,255,255,0.25); }
-    .mult-value.flying { color:#fff; text-shadow:0 0 30px rgba(255,255,255,0.4); }
-    .mult-value.won    { color:var(--green); text-shadow:0 0 30px rgba(45,198,83,0.6); }
-    .mult-value.crashed{ color:var(--red);   text-shadow:0 0 30px rgba(230,57,70,0.6); }
+    .mult-value.idle    { color:rgba(255,255,255,0.25); }
+    .mult-value.flying  { color:#fff; text-shadow:0 0 30px rgba(255,255,255,0.4); }
+    .mult-value.won     { color:var(--green); text-shadow:0 0 30px rgba(45,198,83,0.6); }
+    .mult-value.crashed { color:var(--red);   text-shadow:0 0 30px rgba(230,57,70,0.6); }
 
     .mult-label {
       font-size:12px; color:var(--sub); letter-spacing:2px;
@@ -120,38 +136,52 @@
     .mult-label.crashed   { color:var(--red); }
     .mult-label.won       { color:var(--green); }
 
-    /* Plane on canvas */
     .plane-wrap {
       position:absolute; z-index:20;
       transition:none; pointer-events:none;
     }
-    .plane-ghost { font-size:16px; position:absolute; top:-20px; left:50%; transform:translateX(-50%); animation:ghost-bob 1s ease-in-out infinite alternate; filter:drop-shadow(0 0 6px rgba(179,136,255,0.9)); }
-    @keyframes ghost-bob { from{transform:translateX(-50%) translateY(0)} to{transform:translateX(-50%) translateY(-5px)} }
-
-    .jet {
-      width:min(18vw,80px); height:auto;
-      filter:drop-shadow(0 0 10px rgba(230,57,70,0.9)) drop-shadow(0 2px 20px rgba(230,57,70,0.5));
+    .plane-ghost {
+      position:absolute; top:-34px; left:50%; transform:translateX(-50%);
+      width:30px; height:30px;
+      animation:ghost-bob 1s ease-in-out infinite alternate;
+      filter:drop-shadow(0 0 6px rgba(179,136,255,0.9));
+    }
+    @keyframes ghost-bob {
+      from { transform:translateX(-50%) translateY(0px); }
+      to   { transform:translateX(-50%) translateY(-6px); }
     }
 
-    /* Engine fire */
-    .fire {
-      position:absolute; left:-18px; top:50%; transform:translateY(-50%);
-      display:flex; align-items:center;
+    .plane-svg {
+      width:min(22vw,100px); height:auto;
+      filter:drop-shadow(0 0 8px rgba(230,57,70,0.6)) drop-shadow(0 2px 14px rgba(230,57,70,0.3));
     }
-    .fire-inner {
-      width:18px; height:8px; border-radius:0 4px 4px 0;
-      background:linear-gradient(to left, #fff, #ffe066, #ff6b35, transparent);
-      animation:fire-flicker 0.1s infinite alternate;
+    .prop-spin {
+      transform-origin: 88px 30px;
+      animation: prop-spin 0.1s linear infinite;
     }
-    @keyframes fire-flicker {
-      from{width:14px;opacity:0.9}
-      to{width:22px;opacity:1}
+    @keyframes prop-spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .exhaust-wrap {
+      position:absolute; right:-8px; top:50%; transform:translateY(-50%);
+      pointer-events:none;
+    }
+    .exhaust-dot {
+      width:5px; height:5px; border-radius:50%;
+      background:rgba(180,180,200,0.4);
+      position:absolute; top:0; left:0;
+      animation: exhaust-float 0.5s ease-out infinite;
+    }
+    .exhaust-dot:nth-child(2){ animation-delay:0.17s; }
+    .exhaust-dot:nth-child(3){ animation-delay:0.34s; }
+    @keyframes exhaust-float {
+      0%  { transform:translateX(0)    scale(0.5); opacity:0.5; }
+      100%{ transform:translateX(20px) scale(2);   opacity:0; }
     }
 
-    /* Smoke trail */
     .trail-svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:5; }
 
-    /* Crash flash */
     .crash-flash {
       position:absolute; inset:0; background:rgba(230,57,70,0.15);
       pointer-events:none; opacity:0; z-index:25;
@@ -163,7 +193,6 @@
     /* ── BOTTOM PANEL ── */
     .bottom { background:var(--bg); padding:10px 12px 20px; }
 
-    /* Quick amounts */
     .quick-amounts {
       display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:10px;
     }
@@ -174,7 +203,6 @@
     }
     .qa-btn:active, .qa-btn.active { background:rgba(230,57,70,0.2); border-color:var(--red); color:#fff; }
 
-    /* Bet row */
     .bet-row {
       display:flex; gap:10px; align-items:center; margin-bottom:10px;
     }
@@ -195,7 +223,6 @@
     }
     .bet-input:disabled { opacity:0.5; }
 
-    /* Main action button */
     .action-btn {
       width:100%; padding:16px; border:none; border-radius:14px;
       font-family:'Montserrat',sans-serif; font-weight:900; font-size:18px;
@@ -226,7 +253,6 @@
 
     .btn-sub { font-size:12px; font-weight:600; opacity:0.8; display:block; margin-top:2px; letter-spacing:1px; }
 
-    /* Deposit/Withdraw */
     .dw-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
     .dw-btn {
       padding:12px; border:none; border-radius:12px;
@@ -237,7 +263,6 @@
     .dw-btn.wit { background:rgba(154,44,250,0.2); border:1px solid rgba(154,44,250,0.3); color:var(--ghost); }
     .dw-btn:active { transform:scale(0.96); }
 
-    /* Modal */
     .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(6px); z-index:100; align-items:flex-end; justify-content:center; }
     .modal.open { display:flex; }
     .modal-sheet {
@@ -270,9 +295,7 @@
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <div class="topbar-logo">
-    👻 GHOSTSTEIN
-  </div>
+  <div class="topbar-logo">👻 GHOSTSTEIN</div>
   <div class="topbar-balance" id="topbar-balance">0.00</div>
   <div class="topbar-right">
     <button class="icon-btn">≡</button>
@@ -287,8 +310,6 @@
 <!-- GAME CANVAS -->
 <div class="game-canvas" id="game-canvas">
   <div class="rays"></div>
-
-  <!-- Grid lines -->
   <div class="grid-y">
     <div class="grid-line"></div>
     <div class="grid-line"></div>
@@ -296,11 +317,23 @@
     <div class="grid-line"></div>
     <div class="grid-line"></div>
   </div>
+  <!-- Ghost watermark - animated SVG cartoon -->
+  <div class="ghost-watermark" style="animation:ghost-float-watermark 3s ease-in-out infinite;">
+    <svg viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+      <path d="M14 2 Q4 2 3 12 Q2 18 4 22 Q2 27 5 28 Q8 29 8 25 Q10 28 13 28 Q16 28 16 24 Q17 27 20 28 Q23 29 23 25 Q26 27 24 22 Q26 18 25 12 Q24 2 14 2 Z"
+        fill="rgba(179,136,255,0.9)" stroke="rgba(220,200,255,0.6)" stroke-width="0.5"/>
+      <ellipse cx="10" cy="13" rx="3" ry="3.5" fill="white"/>
+      <ellipse cx="18" cy="13" rx="3" ry="3.5" fill="white"/>
+      <ellipse cx="10.5" cy="13.5" rx="1.5" ry="1.8" fill="#4a0080" style="animation:ghost-eye-blink 3s ease-in-out infinite;"/>
+      <ellipse cx="18.5" cy="13.5" rx="1.5" ry="1.8" fill="#4a0080" style="animation:ghost-eye-blink 3s ease-in-out infinite;"/>
+      <circle cx="9.5" cy="12.2" r="0.6" fill="white" opacity="0.9"/>
+      <circle cx="17.5" cy="12.2" r="0.6" fill="white" opacity="0.9"/>
+      <path d="M10 19 Q14 22 18 19" fill="none" stroke="rgba(100,0,150,0.6)" stroke-width="1" stroke-linecap="round"/>
+      <ellipse cx="7.5" cy="17" rx="2" ry="1.2" fill="rgba(255,150,200,0.35)"/>
+      <ellipse cx="20.5" cy="17" rx="2" ry="1.2" fill="rgba(255,150,200,0.35)"/>
+    </svg>
+  </div>
 
-  <!-- Ghost watermark -->
-  <div class="ghost-watermark">👻</div>
-
-  <!-- Trail SVG -->
   <svg class="trail-svg" id="trail-svg">
     <defs>
       <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -308,107 +341,145 @@
         <stop offset="60%" style="stop-color:rgba(230,57,70,0.6);"/>
         <stop offset="100%" style="stop-color:rgba(255,107,53,0.9);"/>
       </linearGradient>
-    </defs>
-    <polyline id="trail-path" points="" fill="none" stroke="url(#tg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- Filled area under curve -->
-    <polygon id="trail-fill" points="" fill="url(#area-grad)" opacity="0.15"/>
-    <defs>
       <linearGradient id="area-grad" x1="0%" y1="0%" x2="0%" y2="100%">
         <stop offset="0%" style="stop-color:#e63946;stop-opacity:0.5"/>
         <stop offset="100%" style="stop-color:#e63946;stop-opacity:0"/>
       </linearGradient>
     </defs>
+    <polyline id="trail-path" points="" fill="none" stroke="url(#tg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <polygon id="trail-fill" points="" fill="url(#area-grad)" opacity="0.15"/>
   </svg>
 
-  <!-- Graph SVG (axes) -->
   <svg class="graph-svg" id="graph-svg">
-    <!-- Y dots -->
     <g id="y-dots"></g>
   </svg>
 
-  <!-- Plane -->
   <div class="plane-wrap" id="plane-wrap" style="left:20px;bottom:20px;">
     <div style="position:relative;display:inline-block;">
-      <div class="plane-ghost" id="plane-ghost">👻</div>
+      <div class="plane-ghost" id="plane-ghost">
+        <svg viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+          <!-- Glow -->
+          <ellipse cx="14" cy="16" rx="13" ry="15" fill="rgba(179,136,255,0.15)"/>
+          <!-- Body -->
+          <path d="M14 2 Q4 2 3 12 Q2 18 4 22 Q2 27 5 28 Q8 29 8 25 Q10 28 13 28 Q16 28 16 24 Q17 27 20 28 Q23 29 23 25 Q26 27 24 22 Q26 18 25 12 Q24 2 14 2 Z"
+            fill="rgba(210,180,255,0.95)" stroke="rgba(255,255,255,0.5)" stroke-width="0.6"/>
+          <!-- Body highlight -->
+          <path d="M14 3 Q8 4 6 9 Q5 13 6 16 Q9 8 14 7 Q19 8 22 16 Q23 13 22 9 Q20 4 14 3 Z"
+            fill="rgba(255,255,255,0.25)"/>
+          <!-- Left eye white -->
+          <ellipse cx="10" cy="13" rx="3.2" ry="3.8" fill="white"/>
+          <!-- Right eye white -->
+          <ellipse cx="18" cy="13" rx="3.2" ry="3.8" fill="white"/>
+          <!-- Left pupil -->
+          <ellipse cx="10.6" cy="13.6" rx="1.6" ry="2" fill="#3d006b" style="animation:ghost-eye-blink 2.5s ease-in-out infinite;"/>
+          <!-- Right pupil -->
+          <ellipse cx="18.6" cy="13.6" rx="1.6" ry="2" fill="#3d006b" style="animation:ghost-eye-blink 2.5s ease-in-out infinite 0.1s;"/>
+          <!-- Left shine -->
+          <circle cx="9.6" cy="12" r="0.7" fill="white"/>
+          <!-- Right shine -->
+          <circle cx="17.6" cy="12" r="0.7" fill="white"/>
+          <!-- Smile -->
+          <path d="M10.5 19.5 Q14 23 17.5 19.5" fill="none" stroke="rgba(80,0,120,0.7)" stroke-width="1.2" stroke-linecap="round"/>
+          <!-- Blush left -->
+          <ellipse cx="7" cy="17.5" rx="2.2" ry="1.3" fill="rgba(255,130,190,0.4)"/>
+          <!-- Blush right -->
+          <ellipse cx="21" cy="17.5" rx="2.2" ry="1.3" fill="rgba(255,130,190,0.4)"/>
+          <!-- Little sparkle -->
+          <circle cx="23" cy="6" r="0.8" fill="rgba(255,255,255,0.8)" style="animation:ghost-eye-blink 1.8s ease-in-out infinite 0.5s;"/>
+          <circle cx="5" cy="8" r="0.5" fill="rgba(255,255,255,0.6)" style="animation:ghost-eye-blink 2.2s ease-in-out infinite 1s;"/>
+        </svg>
+      </div>
       <div style="position:relative;display:inline-flex;align-items:center;">
-        <div class="fire"><div class="fire-inner"></div></div>
-        <!-- Red Jet SVG -->
-        <svg class="jet" id="jet-svg" viewBox="0 0 140 65" xmlns="http://www.w3.org/2000/svg">
-          <!-- Shadow/depth -->
-          <ellipse cx="70" cy="58" rx="40" ry="4" fill="rgba(0,0,0,0.3)"/>
-          <!-- Main fuselage -->
-          <path d="M20 32 Q60 18 110 31 Q120 32 130 31 L135 32 L130 33 Q120 34 110 33 Q60 46 20 32 Z" fill="url(#body-grad)"/>
+        <!-- Exhaust smoke from tail -->
+        <div class="exhaust-wrap">
+          <div class="exhaust-dot"></div>
+          <div class="exhaust-dot"></div>
+          <div class="exhaust-dot"></div>
+        </div>
+        <!-- Propeller Aviator Plane -->
+        <svg class="plane-svg" id="jet-svg" viewBox="0 0 110 60" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="body-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style="stop-color:#ff3d3d"/>
-              <stop offset="50%" style="stop-color:#cc0000"/>
-              <stop offset="100%" style="stop-color:#8b0000"/>
+              <stop offset="0%" stop-color="#ff4444"/>
+              <stop offset="45%" stop-color="#cc0000"/>
+              <stop offset="100%" stop-color="#880000"/>
             </linearGradient>
-          </defs>
-          <!-- Cockpit glass -->
-          <ellipse cx="105" cy="28" rx="15" ry="7" fill="url(#glass-grad)" stroke="#ff8080" stroke-width="0.5"/>
-          <defs>
+            <linearGradient id="wing-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#991111"/>
+              <stop offset="100%" stop-color="#cc2222"/>
+            </linearGradient>
             <linearGradient id="glass-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:rgba(180,220,255,0.8)"/>
-              <stop offset="100%" style="stop-color:rgba(80,140,200,0.5)"/>
+              <stop offset="0%" stop-color="rgba(160,220,255,0.9)"/>
+              <stop offset="100%" stop-color="rgba(60,130,200,0.6)"/>
             </linearGradient>
           </defs>
-          <!-- Cockpit glare -->
-          <ellipse cx="103" cy="25" rx="6" ry="3" fill="rgba(255,255,255,0.3)"/>
-          <!-- Nose cone -->
-          <path d="M130 31 L140 32 L130 33 Z" fill="#ff6060"/>
-          <!-- Top wing -->
-          <path d="M65 28 L30 8 L55 27 Z" fill="url(#wing-grad)"/>
-          <!-- Bottom wing -->
-          <path d="M65 36 L30 56 L55 37 Z" fill="url(#wing-grad)"/>
-          <defs>
-            <linearGradient id="wing-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" style="stop-color:#880000"/>
-              <stop offset="100%" style="stop-color:#cc0000"/>
-            </linearGradient>
-          </defs>
-          <!-- Wing detail lines -->
-          <line x1="45" y1="16" x2="58" y2="28" stroke="rgba(255,100,100,0.4)" stroke-width="1"/>
-          <line x1="45" y1="48" x2="58" y2="36" stroke="rgba(255,100,100,0.4)" stroke-width="1"/>
-          <!-- Tail fin top -->
-          <path d="M22 28 L5 12 L28 27 Z" fill="#aa0000"/>
-          <!-- Tail fin bottom -->
-          <path d="M22 36 L5 52 L28 37 Z" fill="#880000"/>
-          <!-- Tail fin vertical -->
-          <path d="M18 32 L8 22 L22 30 Z" fill="#bb0000"/>
-          <!-- Body stripe -->
-          <path d="M55 27 L115 26 L115 28 L55 29 Z" fill="rgba(255,255,255,0.15)"/>
-          <!-- Body stripe 2 -->
-          <path d="M55 35 L115 36 L115 34 L55 33 Z" fill="rgba(255,255,255,0.08)"/>
-          <!-- Engine -->
-          <ellipse cx="22" cy="32" rx="9" ry="6" fill="#cc2200"/>
-          <!-- Engine inner glow -->
-          <ellipse cx="20" cy="32" rx="6" ry="4" fill="#ff6600"/>
-          <ellipse cx="18" cy="32" rx="4" ry="3" fill="#ffaa00"/>
-          <ellipse cx="16" cy="32" rx="2.5" ry="2" fill="#ffffff"/>
+
+          <!-- TAIL FINS -->
+          <path d="M8 30 L2 18 L14 27 Z" fill="#aa1111"/>
+          <path d="M8 30 L2 42 L14 33 Z" fill="#881111"/>
+          <!-- Small top tail fin -->
+          <path d="M10 28 L6 20 L15 26 Z" fill="#bb1111"/>
+
+          <!-- MAIN FUSELAGE — classic rounded prop plane body -->
+          <path d="M10 30 Q12 22 30 24 Q55 20 75 25 Q88 27 95 30 Q88 33 75 35 Q55 40 30 36 Q12 38 10 30 Z"
+                fill="url(#body-grad)"/>
+
+          <!-- UPPER WING (main) -->
+          <path d="M35 24 Q38 14 55 16 Q62 17 65 22 Q55 21 38 26 Z" fill="url(#wing-grad)"/>
+          <path d="M35 24 Q28 10 20 8 Q30 12 38 22 Z" fill="#881111"/>
+
+          <!-- LOWER WING -->
+          <path d="M35 36 Q38 46 55 44 Q62 43 65 38 Q55 39 38 34 Z" fill="url(#wing-grad)"/>
+          <path d="M35 36 Q28 50 20 52 Q30 48 38 38 Z" fill="#881111"/>
+
+          <!-- Wing stripes / detail -->
+          <line x1="42" y1="21" x2="55" y2="18" stroke="rgba(255,150,150,0.3)" stroke-width="1"/>
+          <line x1="42" y1="39" x2="55" y2="42" stroke="rgba(255,150,150,0.3)" stroke-width="1"/>
+
+          <!-- COCKPIT / CANOPY -->
+          <ellipse cx="72" cy="26" rx="12" ry="6" fill="url(#glass-grad)" stroke="rgba(255,180,180,0.5)" stroke-width="0.6"/>
+          <ellipse cx="70" cy="24" rx="5" ry="2.5" fill="rgba(255,255,255,0.3)"/>
+
+          <!-- FUSELAGE STRIPE -->
+          <path d="M30 28 Q60 26 88 29 Q88 31 60 32 Q30 33 30 30 Z" fill="rgba(255,255,255,0.10)"/>
+
+          <!-- NOSE CONE -->
+          <path d="M93 28 Q100 29 107 30 Q100 31 93 32 Z" fill="#ff5555"/>
+
+          <!-- ENGINE COWL (circle at nose) -->
+          <ellipse cx="91" cy="30" rx="5" ry="5.5" fill="#cc1111" stroke="#ff3333" stroke-width="0.8"/>
+          <ellipse cx="91" cy="30" rx="3" ry="3.5" fill="#ff4444"/>
+
+          <!-- PROPELLER (spinning group) -->
+          <g class="prop-spin" id="prop-group">
+            <!-- Blade 1 (vertical) -->
+            <path d="M89 30 Q87 18 89 14 Q91 18 89 30 Z" fill="rgba(40,40,40,0.9)" stroke="rgba(80,80,80,0.5)" stroke-width="0.4"/>
+            <!-- Blade 2 (vertical down) -->
+            <path d="M89 30 Q87 42 89 46 Q91 42 89 30 Z" fill="rgba(40,40,40,0.9)" stroke="rgba(80,80,80,0.5)" stroke-width="0.4"/>
+            <!-- Hub center -->
+            <circle cx="89" cy="30" r="2.2" fill="#333" stroke="#555" stroke-width="0.5"/>
+            <circle cx="89" cy="30" r="1" fill="#666"/>
+          </g>
+
           <!-- Rivets -->
-          <circle cx="70" cy="25" r="1" fill="rgba(255,255,255,0.2)"/>
-          <circle cx="85" cy="24" r="1" fill="rgba(255,255,255,0.2)"/>
-          <circle cx="100" cy="24" r="1" fill="rgba(255,255,255,0.2)"/>
+          <circle cx="50" cy="27" r="0.8" fill="rgba(255,200,200,0.25)"/>
+          <circle cx="62" cy="27" r="0.8" fill="rgba(255,200,200,0.25)"/>
+          <circle cx="75" cy="28" r="0.8" fill="rgba(255,200,200,0.25)"/>
         </svg>
       </div>
     </div>
   </div>
 
-  <!-- Multiplier overlay -->
   <div class="mult-wrap">
     <div class="mult-value idle" id="mult-value">1.00x</div>
     <div class="mult-label" id="mult-label">Waiting for bets...</div>
   </div>
 
-  <!-- Crash flash -->
   <div class="crash-flash" id="crash-flash"></div>
 </div>
 
 <!-- BOTTOM PANEL -->
 <div class="bottom">
-
-  <!-- Quick amounts -->
   <div class="quick-amounts">
     <button class="qa-btn" onclick="setQuick(100)">100</button>
     <button class="qa-btn" onclick="setQuick(500)">500</button>
@@ -416,7 +487,6 @@
     <button class="qa-btn" onclick="setQuick(5000)">5,000</button>
   </div>
 
-  <!-- Bet control row -->
   <div class="bet-row">
     <div class="bet-ctrl">
       <button class="bet-adj" id="bet-minus" onclick="adjustBet(-50)">−</button>
@@ -425,18 +495,15 @@
     </div>
   </div>
 
-  <!-- Main action button -->
   <button class="action-btn bet-state" id="action-btn" onclick="handleAction()">
     BET
     <span class="btn-sub" id="btn-sub">100 $GHOSTSTEIN</span>
   </button>
 
-  <!-- Deposit / Withdraw -->
   <div class="dw-row">
     <button class="dw-btn dep" onclick="openModal('deposit')">⬇ Deposit</button>
     <button class="dw-btn wit" onclick="openModal('withdraw')">⬆ Withdraw</button>
   </div>
-
 </div>
 
 <!-- Deposit Modal -->
@@ -466,10 +533,29 @@
 <script>
   const BACKEND = 'https://ghoststein-backend1-production.up.railway.app';
 
+  // ============================================================
+  // ✅ FIX 1: UNIQUE USER ID PER BROWSER
+  // Every browser/device gets its own ID stored in localStorage.
+  // Telegram users get their real Telegram ID as before.
+  // ============================================================
+  function getOrCreateUserId() {
+    // First check Telegram
+    if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+      return window.Telegram.WebApp.initDataUnsafe.user.id.toString();
+    }
+    // Otherwise use a persistent browser ID
+    let id = localStorage.getItem('ghoststein_uid');
+    if (!id) {
+      id = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+      localStorage.setItem('ghoststein_uid', id);
+    }
+    return id;
+  }
+
   // ── STATE ──────────────────────────────────────
   let balance    = 0;
-  let userId     = 'demo_user';
-  let state      = 'waiting';   // waiting | flying | ended | countdown
+  let userId     = 'temp';   // set properly in window.onload
+  let state      = 'waiting';
   let mult       = 1.00;
   let crashAt    = 2.00;
   let gameId     = null;
@@ -480,10 +566,9 @@
   let isBusy     = false;
   let startMs    = 0;
   let wobble     = 0;
-  let trailPts   = [];  // {x, y} canvas coordinates
+  let trailPts   = [];
   let histData   = [];
 
-  // ── CANVAS REF ────────────────────────────────
   const canvas = document.getElementById('game-canvas');
 
   // ── INIT ─────────────────────────────────────
@@ -491,11 +576,9 @@
     if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
-      const u = window.Telegram.WebApp.initDataUnsafe?.user;
-      if (u) {
-        userId = u.id.toString();
-      }
     }
+    // ✅ Set unique userId
+    userId = getOrCreateUserId();
     loadBalance();
     updateBtnSub();
     document.getElementById('bet-input').addEventListener('input', () => {
@@ -509,7 +592,7 @@
       const r = await fetch(`${BACKEND}/api/user/${userId}`);
       const d = await r.json();
       if (d.success) balance = d.balance;
-    } catch { balance = 1000; }
+    } catch { balance = 0; }
     refreshBalance();
   }
 
@@ -536,7 +619,6 @@
     document.getElementById('bet-input').value = val;
     betAmt = val;
     updateBtnSub();
-    // highlight
     document.querySelectorAll('.qa-btn').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');
     setTimeout(() => event.target.classList.remove('active'), 300);
@@ -545,7 +627,7 @@
   // ── BULLETPROOF BUTTON LOCK ───────────────────
   let actionLocked = false;
   let lastActionTime = 0;
-  const MIN_GAP = 800; // ms minimum between any two actions
+  const MIN_GAP = 800;
 
   function canAct() {
     if (actionLocked) return false;
@@ -553,32 +635,27 @@
     if (Date.now() - lastActionTime < MIN_GAP) return false;
     return true;
   }
-  function lockAction() { actionLocked = true; lastActionTime = Date.now(); }
+  function lockAction()   { actionLocked = true; lastActionTime = Date.now(); }
   function unlockAction() { actionLocked = false; }
 
   // ── MAIN ACTION ──────────────────────────────
   function handleAction() {
-    // TRIPLE CHECK - must pass ALL three conditions
     if (!canAct()) return;
     if (state === 'waiting') startGame();
     else if (state === 'flying') cashOut();
-    // Any other state = do nothing
   }
 
   // ── START GAME ───────────────────────────────
   async function startGame() {
-    // Extra safety - check state one more time
     if (state !== 'waiting') return;
 
     betAmt = Math.max(1, parseFloat(document.getElementById('bet-input').value) || 1);
     if (betAmt > balance) return alert('Not enough balance!');
 
-    // LOCK IMMEDIATELY before anything else
     lockAction();
     isBusy = true;
     currentBet = betAmt;
 
-    // Kill any existing animation (safety net)
     if (animID) { clearInterval(animID); animID = null; }
     if (cntID)  { clearInterval(cntID);  cntID  = null; }
 
@@ -588,7 +665,11 @@
         body: JSON.stringify({ userId, betAmount: betAmt })
       });
       const d = await r.json();
-      if (!d.success) { isBusy = false; return alert(d.error); }
+      if (!d.success) {
+        isBusy = false;
+        unlockAction();
+        return alert(d.error);
+      }
       balance = d.balance;
       gameId  = d.gameId;
       crashAt = Math.min(d.crashPoint || fairCrash(), 20);
@@ -615,21 +696,18 @@
 
   // ── FLY ──────────────────────────────────────
   function fly() {
-    // Kill ANY existing loops first (nuclear option)
     if (animID) { clearInterval(animID); animID = null; }
     if (cntID)  { clearInterval(cntID);  cntID  = null; }
 
-    state   = 'flying';
-    mult    = 1.00;
-    wobble  = 0;
+    state    = 'flying';
+    mult     = 1.00;
+    wobble   = 0;
     trailPts = [];
-    startMs = Date.now();
+    startMs  = Date.now();
 
-    // Reset SVG
     document.getElementById('trail-path').setAttribute('points','');
     document.getElementById('trail-fill').setAttribute('points','');
 
-    // Reset plane
     const pw = document.getElementById('plane-wrap');
     pw.style.left   = '20px';
     pw.style.bottom = '20px';
@@ -638,7 +716,6 @@
     document.getElementById('plane-ghost').style.display = 'block';
     document.getElementById('crash-flash').classList.remove('show');
 
-    // UI
     setMult('flying', '1.00x', 'Cash out before it flies away!', '');
     setBtnCashout();
     lockBetControls(true);
@@ -648,43 +725,48 @@
 
   function tick() {
     const elapsed = (Date.now() - startMs) / 1000;
-
-    // ✅ Smooth, realistic multiplier - max ~20x
     mult = parseFloat((1 + elapsed * elapsed * 0.09).toFixed(2));
     if (mult > 20) mult = 20;
 
     document.getElementById('mult-value').textContent = mult.toFixed(2) + 'x';
 
+    // ✅ FIX 3: Update cashout button amount live every tick
+    if (state === 'flying') {
+      document.getElementById('btn-sub').textContent =
+        (currentBet * mult).toFixed(2) + ' $GHOSTSTEIN';
+    }
+
     const cW = canvas.offsetWidth  || 360;
     const cH = canvas.offsetHeight || 220;
     const progress = Math.min((mult - 1) / Math.max(crashAt - 1, 0.1), 1);
 
-    wobble += 0.10;
-    const bob = Math.sin(wobble * 2) * (4 + progress * 10);
+    wobble += 0.06;
+    // Gentle bob — subtle, not wild
+    const bob = Math.sin(wobble * 1.4) * 2.5;
 
-    // Plane position (bottom-left to upper-right)
-    const px = 20 + progress * (cW - 100);
-    const py = cH - 30 - progress * (cH - 60) + bob;
+    // ✅ Smooth exponential curve: x linear, y curves upward naturally
+    const px = 14 + progress * (cW * 0.78);
+    const curveY = Math.pow(progress, 1.7);
+    const py = (cH - 44) - curveY * (cH - 72) + bob;
 
     const pw = document.getElementById('plane-wrap');
     pw.style.left   = px + 'px';
-    pw.style.bottom = (cH - py - 30) + 'px';
+    pw.style.bottom = (cH - py - 26) + 'px';
 
-    // Tilt
-    const tilt = Math.sin(wobble * 2) * (3 + progress * 7);
-    document.getElementById('jet-svg').style.transform = `rotate(${tilt}deg)`;
+    // ✅ Tilt follows the climb angle naturally — starts level, tilts up as it climbs
+    const climbAngle = -Math.min(progress * 24, 22);
+    const wobbleTilt = Math.sin(wobble * 1.4) * 1.8;
+    document.getElementById('jet-svg').style.transform = `rotate(${climbAngle + wobbleTilt}deg)`;
 
-    // Trail
-    trailPts.push({ x: px + 10, y: py + 15 });
+    trailPts.push({ x: px + 10, y: py + 14 });
     if (trailPts.length > 100) trailPts.shift();
 
     const pts = trailPts.map(p => `${p.x},${p.y}`).join(' ');
     document.getElementById('trail-path').setAttribute('points', pts);
 
-    // Filled area
     if (trailPts.length > 1) {
-      const first = trailPts[0];
-      const last  = trailPts[trailPts.length - 1];
+      const first   = trailPts[0];
+      const last    = trailPts[trailPts.length - 1];
       const fillPts = trailPts.map(p => `${p.x},${p.y}`).join(' ')
         + ` ${last.x},${cH} ${first.x},${cH}`;
       document.getElementById('trail-fill').setAttribute('points', fillPts);
@@ -694,32 +776,40 @@
   }
 
   // ── CRASH ─────────────────────────────────────
-  function doCrash() {
+  async function doCrash() {
     clearInterval(animID); animID = null;
-    state = 'ended';
+    state  = 'ended';
     isBusy = false;
     unlockAction();
 
-    document.getElementById('jet-svg').style.opacity = '0';
+    document.getElementById('jet-svg').style.opacity    = '0';
     document.getElementById('plane-ghost').style.display = 'none';
     document.getElementById('crash-flash').classList.add('show');
 
     setMult('crashed', mult.toFixed(2) + 'x', '👻 FLEW AWAY!', 'crashed');
-    setBtnCountdown(5);
     addHistory(mult.toFixed(2), false);
+
+    // ✅ FIX 2: Tell the backend this game crashed so active state clears
+    if (gameId) {
+      try {
+        await fetch(`${BACKEND}/api/game/crash`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ userId, gameId })
+        });
+      } catch { /* silent fail — backend auto-clears after 60s anyway */ }
+    }
+
     countdown(5);
   }
 
   // ── CASH OUT ──────────────────────────────────
   async function cashOut() {
-    // Must be flying AND not busy AND lock must work
     if (state !== 'flying') return;
     if (!canAct()) return;
 
-    // STOP ANIMATION FIRST - before anything else!
+    // Stop animation FIRST
     clearInterval(animID); animID = null;
 
-    // Lock immediately
     lockAction();
     isBusy = true;
     state  = 'ended';
@@ -762,8 +852,9 @@
   }
 
   function resetRound() {
-    state = 'waiting';
-    mult  = 1.00;
+    state  = 'waiting';
+    mult   = 1.00;
+    gameId = null;
     isBusy = false;
     unlockAction();
 
@@ -786,9 +877,9 @@
   function setMult(cls, val, label, labelCls) {
     const mv = document.getElementById('mult-value');
     const ml = document.getElementById('mult-label');
-    mv.className = 'mult-value ' + cls;
+    mv.className   = 'mult-value ' + cls;
     mv.textContent = val;
-    ml.className = 'mult-label ' + labelCls;
+    ml.className   = 'mult-label ' + labelCls;
     ml.textContent = label;
   }
 
@@ -834,7 +925,6 @@
   function addHistory(m, won) {
     histData.unshift({ m, won });
     if (histData.length > 12) histData.pop();
-
     const row = document.getElementById('history-row');
     row.innerHTML = histData.map(h => {
       const v = parseFloat(h.m);
