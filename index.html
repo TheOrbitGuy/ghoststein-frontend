@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GHOSTSTEIN Aviator</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen text-white" style="background: linear-gradient(135deg, #1e1b4b, #581c87, #1e1b4b)">
+
+  <div class="p-4 max-w-md mx-auto">
+
+    <!-- Header -->
+    <div class="text-center mb-6 pt-4">
+      <div class="text-6xl mb-2">👻</div>
+      <h1 class="text-3xl font-bold text-purple-300">GHOSTSTEIN</h1>
+      <p class="text-gray-400 text-sm">Aviator Crash Game</p>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="bg-white/10 rounded-2xl p-4 mb-4 border border-purple-500/30">
+      <div class="text-gray-400 text-xs mb-1">Your Balance</div>
+      <div class="text-2xl font-bold text-purple-300" id="balance">0 $GHOSTSTEIN</div>
+      <div class="text-xs text-gray-500 mt-1" id="wallet-address">Not connected</div>
+    </div>
+
+    <!-- Game Area -->
+    <div class="bg-white/5 rounded-2xl p-6 mb-4 border border-purple-500/20 text-center" style="height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div class="text-6xl font-bold mb-2" id="multiplier" style="color: #22c55e;">1.00x</div>
+      <div class="text-4xl" id="plane">✈️</div>
+      <div class="text-sm text-gray-400 mt-2" id="game-status">Place your bet to start!</div>
+    </div>
+
+    <!-- Bet Controls -->
+    <div class="bg-white/10 rounded-2xl p-4 mb-4 border border-white/10">
+      <div class="text-gray-400 text-xs mb-2">Bet Amount ($GHOSTSTEIN)</div>
+      <div class="flex gap-2 mb-3">
+        <input type="number" id="bet-input" value="100" min="1"
+          class="flex-1 bg-white/5 border border-purple-500/30 rounded-lg px-3 py-2 text-white text-lg focus:outline-none focus:border-purple-500" />
+        <button onclick="halveBet()" class="bg-purple-700 px-3 rounded-lg font-bold">½</button>
+        <button onclick="doubleBet()" class="bg-purple-700 px-3 rounded-lg font-bold">2×</button>
+      </div>
+    </div>
+
+    <!-- Main Button -->
+    <button id="main-btn" onclick="handleMainButton()"
+      class="w-full py-4 rounded-xl font-bold text-xl mb-4 transition-all"
+      style="background: linear-gradient(to right, #9333ea, #ec4899);">
+      🚀 PLACE BET
+    </button>
+
+    <!-- Deposit / Withdraw -->
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <button onclick="showDeposit()"
+        class="bg-green-600 hover:bg-green-700 py-3 rounded-xl font-bold transition-all">
+        ⬇ Deposit
+      </button>
+      <button onclick="showWithdraw()"
+        class="bg-purple-600 hover:bg-purple-700 py-3 rounded-xl font-bold transition-all">
+        ⬆ Withdraw
+      </button>
+    </div>
+
+    <!-- Recent Results -->
+    <div class="bg-white/10 rounded-2xl p-4 border border-white/10">
+      <div class="text-gray-400 text-xs mb-2">Recent Results</div>
+      <div id="history" class="flex flex-wrap gap-2">
+        <div class="text-gray-500 text-sm">No games yet</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Deposit Modal -->
+  <div id="deposit-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 rounded-2xl p-6 w-full max-w-sm border border-purple-500/30">
+      <h2 class="text-xl font-bold mb-4 text-purple-300">⬇ Deposit $GHOSTSTEIN</h2>
+      <input type="number" id="deposit-amount" placeholder="Enter amount"
+        class="w-full bg-white/5 border border-purple-500/30 rounded-lg px-4 py-3 text-white text-lg mb-4 focus:outline-none" />
+      <div class="flex gap-3">
+        <button onclick="closeDeposit()" class="flex-1 bg-gray-600 py-3 rounded-xl font-bold">Cancel</button>
+        <button onclick="confirmDeposit()" class="flex-1 bg-green-600 py-3 rounded-xl font-bold">Deposit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Withdraw Modal -->
+  <div id="withdraw-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 rounded-2xl p-6 w-full max-w-sm border border-purple-500/30">
+      <h2 class="text-xl font-bold mb-4 text-purple-300">⬆ Withdraw $GHOSTSTEIN</h2>
+      <input type="number" id="withdraw-amount" placeholder="Enter amount"
+        class="w-full bg-white/5 border border-purple-500/30 rounded-lg px-4 py-3 text-white text-lg mb-4 focus:outline-none" />
+      <div class="flex gap-3">
+        <button onclick="closeWithdraw()" class="flex-1 bg-gray-600 py-3 rounded-xl font-bold">Cancel</button>
+        <button onclick="confirmWithdraw()" class="flex-1 bg-purple-600 py-3 rounded-xl font-bold">Withdraw</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // CONFIGURATION - YOUR BACKEND URL
+    // ============================================
+    const BACKEND = 'https://ghoststein-backend1-production.up.railway.app';
+    const TOKEN = '$GHOSTSTEIN';
+
+    // ============================================
+    // GAME STATE
+    // ============================================
+    let userId = null;
+    let balance = 0;
+    let gameState = 'waiting'; // waiting, flying, crashed, cashedOut
+    let currentMultiplier = 1.00;
+    let crashPoint = 0;
+    let currentGameId = null;
+    let animationInterval = null;
+
+    // ============================================
+    // INIT - Get Telegram User
+    // ============================================
+    window.onload = () => {
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+        const user = window.Telegram.WebApp.initDataUnsafe?.user;
+        if (user) {
+          userId = user.id.toString();
+          document.getElementById('wallet-address').textContent = `@${user.username || user.first_name}`;
+          loadBalance();
+        }
+      } else {
+        // For testing outside Telegram
+        userId = 'test_user_123';
+        document.getElementById('wallet-address').textContent = 'Test Mode';
+        loadBalance();
+      }
+    };
+
+    // ============================================
+    // LOAD BALANCE
+    // ============================================
+    async function loadBalance() {
+      try {
+        const res = await fetch(`${BACKEND}/api/user/${userId}`);
+        const data = await res.json();
+        if (data.success) {
+          balance = data.balance;
+          updateBalanceDisplay();
+        }
+      } catch (err) {
+        console.error('Failed to load balance:', err);
+      }
+    }
+
+    function updateBalanceDisplay() {
+      document.getElementById('balance').textContent = `${balance.toFixed(2)} ${TOKEN}`;
+    }
+
+    // ============================================
+    // BET CONTROLS
+    // ============================================
+    function halveBet() {
+      const input = document.getElementById('bet-input');
+      input.value = Math.max(1, Math.floor(input.value / 2));
+    }
+
+    function doubleBet() {
+      const input = document.getElementById('bet-input');
+      input.value = Math.floor(input.value * 2);
+    }
+
+    // ============================================
+    // MAIN BUTTON
+    // ============================================
+    function handleMainButton() {
+      if (gameState === 'waiting' || gameState === 'crashed' || gameState === 'cashedOut') {
+        startGame();
+      } else if (gameState === 'flying') {
+        cashOut();
+      }
+    }
+
+    // ============================================
+    // START GAME
+    // ============================================
+    async function startGame() {
+      const betAmount = parseFloat(document.getElementById('bet-input').value);
+
+      if (!betAmount || betAmount <= 0) {
+        alert('Please enter a valid bet amount!');
+        return;
+      }
+
+      if (betAmount > balance) {
+        alert('Insufficient balance! Please deposit first.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BACKEND}/api/game/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, betAmount })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          balance = data.balance;
+          currentGameId = data.gameId;
+          crashPoint = data.crashPoint || (1 + Math.random() * 5);
+          updateBalanceDisplay();
+          startFlying();
+        } else {
+          alert(data.error || 'Failed to start game');
+        }
+      } catch (err) {
+        alert('Connection error. Check your internet!');
+      }
+    }
+
+    // ============================================
+    // FLYING ANIMATION
+    // ============================================
+    function startFlying() {
+      gameState = 'flying';
+      currentMultiplier = 1.00;
+
+      const btn = document.getElementById('main-btn');
+      btn.textContent = '💰 CASH OUT';
+      btn.style.background = 'linear-gradient(to right, #059669, #10b981)';
+
+      document.getElementById('game-status').textContent = 'Flying! Cash out before crash!';
+      document.getElementById('plane').textContent = '✈️';
+
+      const startTime = Date.now();
+
+      animationInterval = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        currentMultiplier = parseFloat((1 + Math.pow(1.08, elapsed * 3) - 1).toFixed(2));
+
+        document.getElementById('multiplier').textContent = currentMultiplier.toFixed(2) + 'x';
+
+        if (currentMultiplier >= crashPoint) {
+          crashed();
+        }
+      }, 100);
+    }
+
+    // ============================================
+    // CRASHED
+    // ============================================
+    function crashed() {
+      clearInterval(animationInterval);
+      gameState = 'crashed';
+
+      document.getElementById('multiplier').style.color = '#ef4444';
+      document.getElementById('multiplier').textContent = currentMultiplier.toFixed(2) + 'x';
+      document.getElementById('plane').textContent = '💥';
+      document.getElementById('game-status').textContent = 'Flew away! 👻';
+
+      addToHistory(currentMultiplier.toFixed(2), false);
+
+      const btn = document.getElementById('main-btn');
+      btn.textContent = '🚀 PLACE BET';
+      btn.style.background = 'linear-gradient(to right, #9333ea, #ec4899)';
+
+      setTimeout(() => {
+        document.getElementById('multiplier').style.color = '#22c55e';
+        document.getElementById('plane').textContent = '✈️';
+        document.getElementById('game-status').textContent = 'Place your bet to start!';
+        gameState = 'waiting';
+      }, 2000);
+    }
+
+    // ============================================
+    // CASH OUT
+    // ============================================
+    async function cashOut() {
+      clearInterval(animationInterval);
+
+      try {
+        const res = await fetch(`${BACKEND}/api/game/cashout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            gameId: currentGameId,
+            multiplier: currentMultiplier
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          balance = data.balance;
+          updateBalanceDisplay();
+          gameState = 'cashedOut';
+
+          document.getElementById('multiplier').style.color = '#facc15';
+          document.getElementById('game-status').textContent = `Won ${data.winAmount.toFixed(2)} ${TOKEN}! 🎉`;
+          document.getElementById('plane').textContent = '🏆';
+
+          addToHistory(currentMultiplier.toFixed(2), true);
+
+          const btn = document.getElementById('main-btn');
+          btn.textContent = '🚀 PLACE BET';
+          btn.style.background = 'linear-gradient(to right, #9333ea, #ec4899)';
+
+          setTimeout(() => {
+            document.getElementById('multiplier').style.color = '#22c55e';
+            document.getElementById('plane').textContent = '✈️';
+            document.getElementById('game-status').textContent = 'Place your bet to start!';
+            gameState = 'waiting';
+          }, 2000);
+
+        } else if (data.crashed) {
+          crashed();
+        }
+      } catch (err) {
+        alert('Connection error!');
+      }
+    }
+
+    // ============================================
+    // HISTORY
+    // ============================================
+    function addToHistory(multiplier, won) {
+      const history = document.getElementById('history');
+      if (history.querySelector('.text-gray-500')) {
+        history.innerHTML = '';
+      }
+
+      const badge = document.createElement('div');
+      badge.className = `px-3 py-1 rounded-full text-sm font-bold ${won
+        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+        : 'bg-red-500/20 text-red-400 border border-red-500/30'}`;
+      badge.textContent = multiplier + 'x' + (won ? ' ✓' : '');
+
+      history.insertBefore(badge, history.firstChild);
+
+      // Keep only last 10
+      while (history.children.length > 10) {
+        history.removeChild(history.lastChild);
+      }
+    }
+
+    // ============================================
+    // DEPOSIT
+    // ============================================
+    function showDeposit() {
+      document.getElementById('deposit-modal').classList.remove('hidden');
+    }
+
+    function closeDeposit() {
+      document.getElementById('deposit-modal').classList.add('hidden');
+    }
+
+    async function confirmDeposit() {
+      const amount = parseFloat(document.getElementById('deposit-amount').value);
+
+      if (!amount || amount <= 0) {
+        alert('Please enter a valid amount!');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BACKEND}/api/deposit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, amount })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          balance = data.balance;
+          updateBalanceDisplay();
+          closeDeposit();
+          alert(`✅ Deposited ${amount} ${TOKEN}!\nNew balance: ${balance.toFixed(2)}`);
+        }
+      } catch (err) {
+        alert('Deposit failed. Check connection!');
+      }
+    }
+
+    // ============================================
+    // WITHDRAW
+    // ============================================
+    function showWithdraw() {
+      document.getElementById('withdraw-modal').classList.remove('hidden');
+    }
+
+    function closeWithdraw() {
+      document.getElementById('withdraw-modal').classList.add('hidden');
+    }
+
+    async function confirmWithdraw() {
+      const amount = parseFloat(document.getElementById('withdraw-amount').value);
+
+      if (!amount || amount <= 0) {
+        alert('Please enter a valid amount!');
+        return;
+      }
+
+      if (amount > balance) {
+        alert('Insufficient balance!');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BACKEND}/api/withdraw`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, amount })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          balance = data.balance;
+          updateBalanceDisplay();
+          closeWithdraw();
+          alert(`✅ Withdrew ${amount} ${TOKEN}!\nNew balance: ${balance.toFixed(2)}`);
+        }
+      } catch (err) {
+        alert('Withdraw failed. Check connection!');
+      }
+    }
+  </script>
+
+</body>
+</html>
